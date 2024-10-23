@@ -1,11 +1,14 @@
 "use client";
 import React from "react";
 import { jsonlFormat } from "./models";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import AutoSizedTextarea from "../components/AutoSizedTextArea";
 
 export const DatasetSlice = ({
   data,
   tableName,
-  removeEntry
+  removeEntry,
 }: {
   tableName: string;
   data: {
@@ -77,10 +80,10 @@ export const DatasetSlice = ({
               <div className="bg-slate-950 text-white px-3 py-0.5 rounded-md">
                 {message.role}
               </div>
-              <textarea
-                className="w-full bg-transparent border-[1px] border-slate-950 focus:outline-none px-3 py-1 rounded-md"
+              <AutoSizedTextarea
+                className="w-full bg-transparent border-[1px] border-slate-950 focus:outline-none px-3 py-1 rounded-md h-auto"
                 defaultValue={message.content}
-                onChange={(e) => {
+                onchange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                   const newDataset = dataset.trainingData.map((item, index) => {
                     if (index === key) {
                       return { ...item, content: e.target.value };
@@ -97,7 +100,11 @@ export const DatasetSlice = ({
                 {message.role}
               </span>{" "}
               {": "}
-              <span>{message.content}</span>
+              <span>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {message.content}
+                </ReactMarkdown>
+              </span>
             </>
           )}
         </div>

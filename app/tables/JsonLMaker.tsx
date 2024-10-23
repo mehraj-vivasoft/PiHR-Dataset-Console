@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { jsonlFormat } from "./models";
+import AutoSizedTextarea from "../components/AutoSizedTextArea";
 
 export const JsonLMaker = ({
   addEntry,
   full_table_name,
 }: {
-  addEntry: (data: {
-    trainingData: jsonlFormat[];
-    id: string;
-  }) => void;
+  addEntry: (data: { trainingData: jsonlFormat[]; id: string }) => void;
   full_table_name: string;
 }) => {
   const roles = ["system", "user", "assistant"];
@@ -77,11 +75,11 @@ export const JsonLMaker = ({
           </button>
         ))}
       </div>
-      <textarea
-        className="w-full h-full p-4 text-white bg-transparent mt-2 focus:outline-none px-3 border-slate-300 border-[1px] rounded-md"
+      <AutoSizedTextarea
+      className="w-full h-full p-4 text-white bg-transparent mt-2 focus:outline-none px-3 border-slate-300 border-[1px] rounded-md"
         placeholder="Enter Instructions Here..."
-        value={instruction}
-        onChange={(e) => setInstruction(e.target.value)}
+        defaultValue={instruction}
+        onchange={(e) => setInstruction(e.target.value)}
       />
       <div className="flex justify-end">
         <button
