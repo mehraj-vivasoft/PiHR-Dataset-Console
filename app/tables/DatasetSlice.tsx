@@ -4,6 +4,7 @@ import { jsonlFormat } from "./models";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import AutoSizedTextarea from "../components/AutoSizedTextArea";
+import remarkBreaks from 'remark-breaks';
 
 export const DatasetSlice = ({
   data,
@@ -96,12 +97,12 @@ export const DatasetSlice = ({
             </div>
           ) : (
             <>
-              <span className="font-semibold tracking-wider">
+              <span className="font-semibold tracking-wider text-red-700">
                 {message.role}
               </span>{" "}
               {": "}
               <span>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                   {message.content}
                 </ReactMarkdown>
               </span>
@@ -118,6 +119,16 @@ export const DatasetSlice = ({
         >
           {deleting ? "Deleting..." : "Delete"}
         </button>
+        {isEdit && (
+          <button
+            className="px-3 py-0.5 bg-slate-950 text-white rounded-lg"
+            onClick={() => {
+              setIsEdit(false);
+            }}
+          >
+            Cancel
+          </button>
+        )}
         <button
           className="px-3 py-0.5 bg-slate-950 text-white rounded-lg"
           onClick={() => {

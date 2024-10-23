@@ -16,6 +16,7 @@ const TablePage = () => {
             <JsonLMaker
               full_table_name={tableData.table_name}
               addEntry={addEntry}
+              tableData={tableData}
             />
             <AddedDataset
               addedDataset={addedDataset}

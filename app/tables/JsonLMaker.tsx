@@ -1,13 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { jsonlFormat } from "./models";
+import { jsonlFormat, TableSchemaFromDB } from "./models";
 import AutoSizedTextarea from "../components/AutoSizedTextArea";
+
+const getSchemaInString = (tableData: TableSchemaFromDB) => {
+  return `# Here is the Schema for ${tableData.table_name}:\n\n# The columns are:\n\n${tableData.columns
+    ?.map((column) => `${column.name} : ${column.type}`)
+    .join("\n")}\n\n## Primary keys are:\n\n${tableData.primary_keys?.join(
+    ", "
+  )}\n\n## Forign Keys Are:\n\n${tableData.foreign_keys
+    ?.map(
+      (key) =>
+        `${key.name} : ${key.constrained_columns} -> ${key.referred_schema}.${
+          key.referred_table
+        }(${key.referred_columns.join(", ")})`
+    )
+    .join("\n")}\n\n## Indexes are:\n\n${tableData.indexes
+    ?.map((index) => `${index.name} : ${index.columns.join(", ")}`)
+    .join("\n")}\n\nRemember this details while generating query for PiHR Database`;
+};
+
+const autoGenInstruction = (
+  tableName: string,
+  tableData: TableSchemaFromDB
+) => {
+  const moduleName = tableName.split(".")[0];
+  return [
+    {
+      role: "system",
+      content:
+        "You are an expert in PiHR which is a SaaS based fully integrated HR and payroll software management system and You can generate SQL Query for PiHR Database",
+    },
+    {
+      role: "user",
+      content:
+        "In the '" +
+        moduleName +
+        "' module PiHR has a table named '" +
+        tableName +
+        "'.",
+    },
+    {
+      role: "assistant",
+      content: "Explain the schema or details of '" + tableName + "' table So that I can generate query for PiHR Database",
+    },
+    {
+      role: "user",
+      content: getSchemaInString(tableData),
+    },
+  ];
+};
 
 export const JsonLMaker = ({
   addEntry,
   full_table_name,
+  tableData,
 }: {
   addEntry: (data: { trainingData: jsonlFormat[]; id: string }) => void;
   full_table_name: string;
+  tableData: TableSchemaFromDB;
 }) => {
   const roles = ["system", "user", "assistant"];
   const [selectedRole, setSelectedRole] = useState<string>("system");
@@ -76,12 +126,20 @@ export const JsonLMaker = ({
         ))}
       </div>
       <AutoSizedTextarea
-      className="w-full h-full p-4 text-white bg-transparent mt-2 focus:outline-none px-3 border-slate-300 border-[1px] rounded-md"
+        className="w-full h-full p-4 text-white bg-transparent mt-2 focus:outline-none px-3 border-slate-300 border-[1px] rounded-md"
         placeholder="Enter Instructions Here..."
         defaultValue={instruction}
         onchange={(e) => setInstruction(e.target.value)}
       />
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
+        <button
+          className="px-4 py-0.5 rounded-md bg-white text-slate-950"
+          onClick={() => {
+            setMessages(autoGenInstruction(full_table_name, tableData));
+          }}
+        >
+          AUTO GENERATE
+        </button>
         <button
           className="px-4 py-0.5 rounded-md bg-white text-slate-950"
           onClick={() => {
