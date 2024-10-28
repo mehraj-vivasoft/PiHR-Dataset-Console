@@ -38,7 +38,7 @@ export default function DisplayJsonlData({
 
   return (
     <div className="bg-[#9CDCFE]">
-      <h1 className="w-full text-center pt-4 pb-2 tracking-wider">DATASET : {params.datasetName}.jsonl</h1>
+      <h1 className="w-full text-center pt-4 pb-2 tracking-wider">DATASET : {params.datasetName}.jsonl - {data.length} entries</h1>      
       <ul className="grid grid-cols-3 gap-4 text-xs">
         {data.map((item, index) => (
           <li key={index} className="overflow-y-hidden p-3 bg-[#202020] text-[#9CDCFE]">
