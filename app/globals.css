@@ -125,6 +125,7 @@ body {
 
 ::-webkit-scrollbar {
   width: 4px; /* Width of the scrollbar */
+  height: 5px; /* Height of the scrollbar */  
 }
 
 ::-webkit-scrollbar-track {

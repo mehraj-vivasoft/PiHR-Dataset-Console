@@ -1,10 +1,12 @@
-import OpenAI from "openai";
+// import OpenAI from "openai";
 import dotenv from "dotenv";
 import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config();
 const apiKey = process.env.OPENAI_API_KEY;
 
+/*
 const getGptDescription = async (
   tableData: string,
   prefixMessage: string
@@ -42,6 +44,7 @@ const getGptDescription = async (
 
   return completion.choices[0].message.content || "";
 };
+*/
 
 export async function POST(req: NextRequest) {
   const { tableData, prefixMessage } = await req.json();
@@ -54,9 +57,36 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const description = await getGptDescription(tableData, prefixMessage);
+    const description = await getGemeniDescription(tableData, prefixMessage);
     return NextResponse.json({ description }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: error }, { status: 500 });
   }
 }
+
+const getGemeniDescription = async (
+  tableData: string,
+  prefixMessage: string
+): Promise<string> => {
+  if (!apiKey) {
+    throw new Error(
+      "OPENAI_API_KEY is not defined in the environment variables"
+    );
+  }
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const prompt =
+    "You are an expert in PiHR which is a SaaS based fully integrated HR and payroll software management system and You can generate Table Description for PiHR Database.\n\n" +
+    "Here is the schema details of the table: " +
+    tableData +
+    ".\n\n Please generate short and main information and just return the short and core description for this table by appending the description from the prefix below: \n\n " +
+    prefixMessage;
+
+  const result = await model.generateContent(prompt);
+  const description = result.response.text();
+  console.log("gemini generated description : ", description);
+
+  return description;
+};
