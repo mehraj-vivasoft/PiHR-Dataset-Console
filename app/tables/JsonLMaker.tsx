@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { jsonlFormat, TableSchemaFromDB } from "./models";
 import AutoSizedTextarea from "../components/AutoSizedTextArea";
+import { getGptDescription } from "./controllers/getGptDescription";
 
 const getSchemaInString = (tableData: TableSchemaFromDB) => {
-  return `# Here is the Schema for ${tableData.table_name}:\n\n# The columns are:\n\n${tableData.columns
-    ?.map((column) => `${column.name} : ${column.type}`)
+  return `# Here is the Schema for ${
+    tableData.table_name
+  }:\n\n# The columns are:\n\n${tableData.columns
+    ?.map((column) =>
+      column.name === "CB" ||
+      column.name === "CD" ||
+      column.name === "MB" ||
+      column.name === "MD"
+        ? ``
+        : `${column.name} : ${column.type}`
+    )
     .join("\n")}\n\n## Primary keys are:\n\n${tableData.primary_keys?.join(
     ", "
   )}\n\n## Forign Keys Are:\n\n${tableData.foreign_keys
@@ -16,14 +26,32 @@ const getSchemaInString = (tableData: TableSchemaFromDB) => {
     )
     .join("\n")}\n\n## Indexes are:\n\n${tableData.indexes
     ?.map((index) => `${index.name} : ${index.columns.join(", ")}`)
-    .join("\n")}\n\nRemember this details while generating query for PiHR Database`;
+    .join(
+      "\n"
+    )}\n\nRemember this details while generating query for PiHR Database`;
 };
 
-const autoGenInstruction = (
+const generateTableDescriptionFromAI = async (
+  tableData: TableSchemaFromDB,
+  prefixMsg: string
+) => {
+  const schemaDetails = getSchemaInString(tableData);
+  const desc = await getGptDescription(schemaDetails, prefixMsg);
+  return desc;
+};
+
+const autoGenInstruction = async (
   tableName: string,
-  tableData: TableSchemaFromDB
+  tableData: TableSchemaFromDB,
+  isAI: boolean = false
 ) => {
   const moduleName = tableName.split(".")[0];
+  const prefixMsg =
+    "In the '" +
+    moduleName +
+    "' module PiHR has a table named '" +
+    tableName +
+    "' which is used to store";
   return [
     {
       role: "system",
@@ -32,16 +60,16 @@ const autoGenInstruction = (
     },
     {
       role: "user",
-      content:
-        "In the '" +
-        moduleName +
-        "' module PiHR has a table named '" +
-        tableName +
-        "'.",
+      content: isAI
+        ? await generateTableDescriptionFromAI(tableData, prefixMsg)
+        : prefixMsg,
     },
     {
       role: "assistant",
-      content: "Explain the schema or details of '" + tableName + "' table So that I can generate query for PiHR Database",
+      content:
+        "Explain the schema or details of '" +
+        tableName +
+        "' table So that I can generate query for PiHR Database",
     },
     {
       role: "user",
@@ -134,8 +162,22 @@ export const JsonLMaker = ({
       <div className="flex justify-end gap-3">
         <button
           className="px-4 py-0.5 rounded-md bg-white text-slate-950"
-          onClick={() => {
-            setMessages(autoGenInstruction(full_table_name, tableData));
+          onClick={async () => {
+            const data = await autoGenInstruction(
+              full_table_name,
+              tableData,
+              true
+            );
+            setMessages(data);
+          }}
+        >
+          AI
+        </button>
+        <button
+          className="px-4 py-0.5 rounded-md bg-white text-slate-950"
+          onClick={async () => {
+            const data = await autoGenInstruction(full_table_name, tableData);
+            setMessages(data);
           }}
         >
           AUTO GENERATE

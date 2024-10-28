@@ -4,7 +4,7 @@ import { jsonlFormat } from "./models";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import AutoSizedTextarea from "../components/AutoSizedTextArea";
-import remarkBreaks from 'remark-breaks';
+import remarkBreaks from "remark-breaks";
 
 export const DatasetSlice = ({
   data,
@@ -71,6 +71,37 @@ export const DatasetSlice = ({
 
   return (
     <>
+      <div className="flex justify-end mt-1 gap-3">
+        <button
+          className="px-3 py-0.5 bg-red-800 text-white rounded-lg"
+          onClick={() => {
+            deleteDataset();
+          }}
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </button>
+        {isEdit && (
+          <button
+            className="px-3 py-0.5 bg-slate-950 text-white rounded-lg"
+            onClick={() => {
+              setIsEdit(false);
+            }}
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          className="px-3 py-0.5 bg-slate-950 text-white rounded-lg"
+          onClick={() => {
+            if (isEdit) {
+              updateDataset();
+            }
+            setIsEdit(!isEdit);
+          }}
+        >
+          {updating ? "Updating..." : isEdit ? "Save" : "Edit"}
+        </button>
+      </div>
       {dataset?.trainingData?.map((message, key) => (
         <div
           key={dataset.id + key}
@@ -110,37 +141,6 @@ export const DatasetSlice = ({
           )}
         </div>
       ))}
-      <div className="flex justify-end mt-1 gap-3">
-        <button
-          className="px-3 py-0.5 bg-red-800 text-white rounded-lg"
-          onClick={() => {
-            deleteDataset();
-          }}
-        >
-          {deleting ? "Deleting..." : "Delete"}
-        </button>
-        {isEdit && (
-          <button
-            className="px-3 py-0.5 bg-slate-950 text-white rounded-lg"
-            onClick={() => {
-              setIsEdit(false);
-            }}
-          >
-            Cancel
-          </button>
-        )}
-        <button
-          className="px-3 py-0.5 bg-slate-950 text-white rounded-lg"
-          onClick={() => {
-            if (isEdit) {
-              updateDataset();
-            }
-            setIsEdit(!isEdit);
-          }}
-        >
-          {updating ? "Updating..." : isEdit ? "Save" : "Edit"}
-        </button>
-      </div>
     </>
   );
 };
